@@ -7,6 +7,7 @@ import urllib.request
 import http.cookies
 import http.cookiejar
 import pymysql
+from extractor import NPExtractor
 from bs4 import BeautifulSoup
 
 
@@ -46,12 +47,25 @@ class Spider:
                     author = div.find("h2").find("span").find_all("b")[1].get_text()
                     origin = div.find("h2").find("span").find_all("b")[2].get_text()
                     editor = div.find("h2").find("span").find_all("b")[3].get_text()
-                text = soup.find('div', class_="text").find_all("b")
                 words = ""
-                for word in text:
-                    words += word.get_text().strip()+"|"
+
+                if soup.find('div', class_="text").find(has_word):
+                    text = soup.find('div', class_="text").find_all("b")
+                    for word in text:
+                        words += word.get_text().strip() + " "
+                else:
+                    text = soup.find('div', class_="text").find_all("div") or soup.find('div', class_="text").find_all("p")
+                    for word in text:
+                        words += str(NPExtractor(word.get_text().strip()).extract()) + " "
                 words = words.replace(' ', '')
-                self.saveinfo(head,time,author,origin,editor,words)
+                print(words)
+                print("#####################################")
+                #解析提取关键字
+                # np_extractor = NPExtractor(words)
+                # result = np_extractor.extract()
+                # print("This sentence is about: %s" % ", ".join(result))
+                #插入至数据库
+                #self.saveinfo(head,time,author,origin,editor,words)
             else:
                 return
 
